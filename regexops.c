@@ -27,14 +27,11 @@
 *
 */
 
-#include <argp.h> /*
-				* for parsing unix-style argument vectors.
-				*/
 
 #include <err.h> /* 
 				* for use: void errx(int eval, const char *fmt, ...)
 				*/
-
+#include <getopt.h>
 #include <regex.h> /*
 					* for use: int regcomp(regex_t *_restrict_ preg, const char *_restrict_ pattern,
 					* 					int cflags)
@@ -83,23 +80,23 @@
 					* int isatty(int fd)
 					*/
 
+
+#define BUG_ADDRESS "<uidopsu@gmail.com>" /* Email for report bug.  */
+#define VERSION_ "1.1" /* Version of program.  */
+#define HOME_PAGE "https://github.com/siruidops/regexops" /* Home page.  */ 
+
+
 void		 print_arg_error(void); /* print_arg_error declaration  */
 void		 signal_handler(int); /* signal_handler declaration  */
-static int		 parse_opt(int, char*, struct argp_state*); /* parse_opt declaration  */
-
-const char		*argp_program_bug_address = "<uidopsu@gmail.com>"; /* Email for report bug.  */
-const char		*argp_program_version = "regexops 1.1\nhttps://github.com/siruidops/regexops"; /* version of program.  */ 
 
 extern char		*__progname; /* __progname is defined by the libc for get program name. */
 
-struct argp_option opt[] = { /* arguments  */
-	{"number", 'n', 0, 0x1, "Show line number"},
-	{0}
-};
-
-struct arguments {
-	enum		 {CHARACTER_MODE, WORD_MODE, LINE_MODE} mode;
-	bool		 isCaseInsensitive;
+struct option long_opt[] = {
+	{"number", 0, NULL, 'n'},
+	{"help", 0, NULL, 'h'},
+	{"usage", 0, NULL, 777},
+	{"version", 0, NULL, 'V'},
+	{NULL, 0, NULL, 0}
 };
 
 typedef struct Options {
@@ -119,50 +116,64 @@ void
 print_arg_error()
 {
 	/* a function for write a banner for invalid argument in to standard error.  */
-	fprintf(stderr, "Usage: regexops [OPTION...] [REGEX_PATTERN] [FILE]\nTry `%s --help' or `%s --usage' for more information.`\n", __progname,  __progname);
+	fprintf(stderr, "Usage: regexops [OPTION...] [REGEX_PATTERN] [FILE]\nTry `%s --help' or `%s --usage' for more information.\n", __progname,  __progname);
 	exit(1); /* exit with status number 1.  */
 }
-
-static int
-parse_opt(int key, char *arg, struct argp_state *state) /* Option parser.  */
-{
-	switch(key) {
-		case 'n':
-			setting.show_number = true;
-			break;
-
-		case 0:
-			if (setting.regex == NULL)
-				setting.regex = arg;
-			else
-				setting.filename = arg;
-			break;
-	}
-
-	return 0;
-}
-
 
 int
 main(int argc, char *argv[])
 {
 	regex_t		 regexer;
-	int		 value; /* declaring Integer for recive status of  regcomp and regexec for handle errors.  */
+	int		 value, opt; /* declaring Integer for recive status of  regcomp and regexec for handle errors. and opt. */
 	long int		 line_number = 0; /* declaring Integer for Count the number of lines.  */
 
 	char		*line = NULL; /* declaring character pointer for recive line.  */ 
 	size_t		 len = 0;
 	FILE		*fp; /* declaring pointer of FILE type.  */
 
+	while((opt = getopt_long(argc, argv, ":nhV", long_opt, NULL)) != -1) {
+		switch(opt) {
+			case -1: /* no more arguments  */
+			case 0: /* long options toggles  */
+				break;
+			case 'n':
+				setting.show_number = true;
+				break;
 
-	struct arguments arguments;
-	struct argp argp = {opt, parse_opt, "[REGEX_PATTERN] [FILE]", "a small tool for printing lines that match Regex patterns"};
+			case 'h':
+				fprintf(stdout, "Usage: %s [OPTION...] [REGEX_PATTERN] [FILE]\n", __progname);
+				fprintf(stdout, "a small tool for printing lines that match Regex patterns.\n\n");
+				fprintf(stdout, " Options:\n");
+				fprintf(stdout, "   -n, --number             Show line number\n");
+				fprintf(stdout, "   -h, --help               Give help message\n");
+				fprintf(stdout, "   --usage                  Give a short usage message\n");
+				fprintf(stdout, "   -V, --version            Print program version\n\n");
+				fprintf(stdout, "Report bugs to: %s\n", BUG_ADDRESS);
+				fprintf(stdout, "Regexops home page: %s\n", HOME_PAGE);
+				exit(0);
 
-	arguments.mode = CHARACTER_MODE;
-    arguments.isCaseInsensitive = true;
+			case 777:
+				fprintf(stdout, "Usage: regexops [-n?V] [--number] [--help] [--usage] [--version] [REGEX_PATTERN] [FILE]\n");
+				exit(0);
+			
+			case 'V':
+				fprintf(stdout, "Regexops version %s\n", VERSION_);
+				exit(0);
 
+			default:
+				fprintf(stderr, "%s: invalid option -- %c\n", __progname, opt);
+				fprintf(stderr, "Try `%s --help' or `%s --usage' for more information.\n", __progname, __progname);
+				exit(1);
+		};
+	};
 
-    argp_parse(&argp, argc, argv, 1, 0, &arguments);
+	for(; optind < argc; optind++) {
+		if (setting.regex == NULL)
+			setting.regex = argv[optind];
+		else
+			setting.filename = argv[optind];
+    }
+
 
 	signal(SIGINT, signal_handler); /* Handle SIGINT Signal.  */
 	signal(SIGKILL, signal_handler); /* Handle SIGKILL Signal.  */
