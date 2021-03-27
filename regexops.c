@@ -37,7 +37,7 @@
 					* 					int cflags)
 					*
 					* and: int regexec(const regex_t *preg, const char *string,
-            		* 					size_t nmatch, regmatch_t *pmatch, int eflags)
+					* 					size_t nmatch, regmatch_t *pmatch, int eflags)
 					*/
  
 #include <signal.h> /*
@@ -100,7 +100,7 @@ struct option long_opt[] = {
 };
 
 typedef struct Options {
-    bool		 show_number;
+	bool		 show_number;
 	char		*filename;
 	char		*regex;
 } Options;
