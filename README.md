@@ -37,7 +37,7 @@ regexops [OPTION...] [REGEX_PATTERN] [FILE]
 There is a man page for it in the address man/regexops.1.gz and also after installation you can see it with the following command
 
 ```sh
-man regexops
+man 1 regexops
 ```
 
 ## Contributing
