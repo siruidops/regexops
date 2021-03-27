@@ -30,7 +30,7 @@ sudo make install
 ## Usage
 
 ```sh
-regexops [OPTIONS] [REGEX_PATTERN] [FILE]
+regexops [OPTION...] [REGEX_PATTERN] [FILE]
 ```
 
 ## Documentation
