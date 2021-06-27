@@ -30,7 +30,7 @@
 SRC = regexops.c
 PREFIX = /usr
 CC = cc
-CFLAGS = -Wall -g3
+CFLAGS = -Wall -O2
 TARGET = regexops
 DOC = regexops.1.gz
 DOC_FULL_PATH = man/$(DOC)
